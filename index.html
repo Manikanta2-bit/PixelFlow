@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PixelFlow 2.0 — The Creative Universe</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08090D;--bg2:#10121A;--panel:#151824;--bd:#25293A;--vi:#8B5CF6;--cy:#22D3EE;--mg:#EC4899;--tx:#F8FAFC;--tx2:#94A3B8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font:14px Inter,system-ui,sans-serif}
+#app{display:grid;grid-template-columns:220px 1fr 280px;grid-template-rows:52px 1fr 44px;height:100%}
+header{grid-column:1/4;display:flex;align-items:center;gap:8px;padding:0 12px;background:var(--bg2);border-bottom:1px solid var(--bd)}
+.brand{font:700 16px Sora,sans-serif;letter-spacing:.2px;margin-right:6px;white-space:nowrap}
+.brand i{font-style:normal;color:var(--cy)}
+#title{background:transparent;border:1px solid transparent;color:var(--tx);font:600 14px Sora,sans-serif;padding:6px 8px;border-radius:6px;width:170px}
+#title:hover,#title:focus{border-color:var(--bd);outline:none}
+.sp{flex:1}
+button,select{font:inherit;color:var(--tx);background:var(--panel);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;cursor:pointer;transition:border-color .15s,background .15s}
+button:hover{border-color:var(--vi)}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cy);outline-offset:1px}
+button.pri{background:var(--vi);border-color:var(--vi);font-weight:600}
+button:disabled{opacity:.4;cursor:default}
+nav{background:var(--bg2);border-right:1px solid var(--bd);overflow:auto;padding:10px 8px}
+nav h4{margin:14px 8px 6px;font:600 12px Sora,sans-serif;color:var(--tx2)}
+nav button{display:block;width:100%;text-align:left;border:0;background:transparent;margin:1px 0;color:var(--tx2)}
+nav button:hover{background:var(--panel);color:var(--tx)}
+nav button.on{background:var(--panel);color:var(--tx);box-shadow:inset 3px 0 var(--vi)}
+nav button.off{opacity:.35;cursor:default}
+main{position:relative;background:var(--bg);min-height:0;overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+#hint{position:absolute;left:12px;bottom:10px;color:var(--tx2);font-size:12px;pointer-events:none}
+aside{background:var(--bg2);border-left:1px solid var(--bd);overflow:auto;padding:14px}
+aside h3{margin:0 0 4px;font:700 15px Sora,sans-serif}
+aside p{margin:0 0 12px;color:var(--tx2);font-size:12px;line-height:1.4}
+.pre{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.pre button{font-size:12px;padding:4px 8px}
+.row{margin:10px 0}.row label{display:flex;justify-content:space-between;color:var(--tx2);font-size:12px;margin-bottom:4px}
+input[type=range]{width:100%;accent-color:var(--vi)}
+.bar{grid-column:1/4;display:flex;align-items:center;gap:8px;padding:0 12px;background:var(--bg2);border-top:1px solid var(--bd);color:var(--tx2);font-size:12px}
+.bar label{display:flex;align-items:center;gap:6px}
+#toast{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--vi);padding:8px 14px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.on{opacity:1}
+#help{position:absolute;inset:0;background:var(--bg);padding:28px;overflow:auto;display:none}
+#help h2{font-family:Sora,sans-serif;margin-top:0}
+kbd{background:var(--panel);border:1px solid var(--bd);border-radius:4px;padding:1px 6px}
+@media(max-width:860px){#app{grid-template-columns:1fr;grid-template-rows:52px auto 1fr auto 44px}header,.bar{grid-column:1}nav{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--bd);padding:6px}nav h4,nav button.off{display:none}nav button{width:auto;white-space:nowrap}aside{border-left:0;border-top:1px solid var(--bd);max-height:38vh}main{min-height:320px}#title{width:100px}.brand{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head>
+<body>
+<div id="app">
+<header>
+ <span class="brand">Pixel<i>Flow</i> 2.0</span>
+ <input id="title" value="Untitled project" aria-label="Project title">
+ <span class="sp"></span>
+ <button id="bSave">Save</button><button id="bUndo" title="Ctrl+Z">Undo</button><button id="bRedo" title="Ctrl+Shift+Z">Redo</button>
+ <button id="bRand">Randomize</button><button id="bReset">Reset</button><button id="bFull">Fullscreen</button>
+ <button class="pri" id="bExp">Export PNG</button>
+</header>
+<nav id="nav"></nav>
+<main id="stage"><canvas id="cv"></canvas><div id="hint"></div>
+<div id="help"><h2>Help and shortcuts</h2>
+<p>Move the pointer over the canvas to interact. Every mode has its own sliders and presets in the right panel.</p>
+<p><kbd>Ctrl</kbd>+<kbd>Z</kbd> undo · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> redo · <kbd>R</kbd> randomize · <kbd>F</kbd> fullscreen · <kbd>S</kbd> save · <kbd>E</kbd> export PNG · <kbd>Space</kbd> pause</p>
+<p>Particle Playground: click to cause an explosion. Fractal Explorer: scroll to zoom, drag to pan, double-click to reset the view. PhotoFlow: upload a photo and the particles rebuild it; move the pointer to scatter them.</p></div>
+</main>
+<aside id="panel"></aside>
+<div class="bar">
+ <label>Background <input type="color" id="bg" value="#08090d"></label>
+ <label>Hue shift <input type="range" id="hue" min="0" max="360" value="0" style="width:110px"></label>
+ <button id="bPause">Pause</button>
+ <span class="sp"></span><span id="fps">—</span>
+</div>
+</div>
+<div id="toast"></div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s),cv=$('#cv'),ctx=cv.getContext('2d');
+let W=0,H=0,dpr=1,paused=false,mode='particles',mx=-999,my=-999,down=false,t=0,hueG=0,bgc='#08090d';
+const TAU=Math.PI*2;
+const S=(k,l,min,max,step,v)=>({k,l,min,max,step,v});
+const M={
+particles:{n:'Particle Playground',hint:'Move to interact · click to explode',p:[S('count','Density',20,600,10,220),S('speed','Speed',.1,4,.1,1),S('radius','Radius',.5,6,.1,2),S('gravity','Gravity',-1,1,.05,0),S('attract','Attraction',0,3,.1,1),S('repel','Repulsion',0,3,.1,0),S('orbit','Orbit',0,3,.1,.4),S('link','Connections',0,140,5,70),S('trail','Trail persistence',0,.97,.01,.8)],
+ pre:{'Cosmic Dust':{count:400,speed:.4,radius:1,gravity:0,attract:.3,repel:0,orbit:.2,link:0,trail:.5},'Neon Galaxy':{count:300,speed:.8,radius:1.6,gravity:0,attract:1.2,repel:0,orbit:2,link:40,trail:.9},'Electric Storm':{count:200,speed:2.5,radius:1.5,gravity:0,attract:.2,repel:1.5,orbit:0,link:110,trail:.7},'Fireflies':{count:60,speed:.5,radius:3.5,gravity:-.05,attract:.5,repel:0,orbit:.5,link:0,trail:.93},'Digital Rain':{count:350,speed:1.5,radius:1.2,gravity:.8,attract:0,repel:.5,orbit:0,link:0,trail:.85},'Supernova':{count:500,speed:2,radius:1.8,gravity:0,attract:0,repel:2.5,orbit:1,link:20,trail:.9}}},
+fluid:{n:'Fluid Flow',hint:'Drag to disturb the flow',p:[S('count','Density',200,3000,100,1400),S('speed','Speed',.1,4,.1,1),S('scale','Noise scale',.5,6,.1,2),S('turb','Turbulence',0,3,.1,1),S('vortex','Vortex strength',0,4,.1,1.5),S('width','Line width',.5,4,.1,1.2),S('trail','Persistence',.8,.995,.005,.96),S('hue2','Color blend',0,200,5,80)],
+ pre:{'Liquid Dreams':{count:1400,speed:1,scale:2,turb:1,vortex:1.5,width:1.2,trail:.96,hue2:80},'Neon Ocean':{count:2000,speed:1.4,scale:1.2,turb:.4,vortex:1,width:1,trail:.97,hue2:50},'Purple Haze':{count:900,speed:.5,scale:3,turb:2,vortex:2,width:2.5,trail:.985,hue2:30},'Digital Smoke':{count:2600,speed:.8,scale:4.5,turb:2.5,vortex:.5,width:.7,trail:.93,hue2:120},'Ink in Water':{count:700,speed:.6,scale:1.6,turb:1.2,vortex:3,width:3,trail:.99,hue2:15}}},
+geo:{n:'Geometry Lab',hint:'Move the pointer to warp the pattern',p:[S('sym','Symmetry',2,24,1,8),S('shapes','Shape count',1,16,1,6),S('rot','Rotation speed',-2,2,.05,.3),S('lw','Line thickness',.3,5,.1,1.2),S('space','Spacing',.1,1,.02,.5),S('scale','Scale',.3,1.6,.02,1),S('cx','Complexity',3,12,1,5),S('warp','Mouse distortion',0,1,.05,.5)],
+ pre:{'Sacred Geometry':{sym:6,shapes:6,rot:.1,lw:1,space:.55,scale:1,cx:6,warp:.2},'Neon Mandala':{sym:12,shapes:10,rot:.3,lw:1.5,space:.4,scale:1,cx:4,warp:.5},'Kaleidoscope':{sym:16,shapes:5,rot:.8,lw:2,space:.7,scale:1.1,cx:3,warp:.8},'Cyber Grid':{sym:4,shapes:14,rot:.05,lw:.8,space:.3,scale:1.3,cx:4,warp:.3},'Infinite Spiral':{sym:3,shapes:16,rot:.6,lw:1,space:.9,scale:1,cx:12,warp:.4}}},
+fractal:{n:'Fractal Explorer',hint:'Scroll to zoom · drag to pan · double-click to reset',p:[S('julia','Julia set (0 = Mandelbrot)',0,1,1,0),S('iter','Iterations',30,600,10,150),S('res','Resolution (px per sample)',1,6,1,2),S('hue','Color mapping',0,360,5,250),S('cre','Julia c (real)',-1.2,1.2,.005,-.7),S('cim','Julia c (imag)',-1.2,1.2,.005,.27)],
+ pre:{'Classic':{julia:0,iter:150,hue:250},'Deep dive':{julia:0,iter:400,hue:300},'Dragon Julia':{julia:1,iter:200,hue:190,cre:-.8,cim:.156},'Spiral Julia':{julia:1,iter:250,hue:320,cre:-.7269,cim:.1889}}},
+portrait:{n:'PhotoFlow',hint:'Upload a photo · move to scatter particles',p:[S('count','Particles',1000,9000,500,4500),S('size','Dot size',.6,4,.1,1.6),S('spring','Spring',.01,.2,.01,.06),S('scatter','Scatter force',0,3,.1,1.5),S('tint','Neon tint',0,1,.05,.35)],pre:{'Crisp':{count:7000,size:1.2,spring:.1,scatter:1.5,tint:.1},'Dreamy':{count:3000,size:2.6,spring:.03,scatter:2,tint:.6}}}
+};
+const NAV=[['Creative Studio','particles'],['Particle Playground','particles'],['Fluid Flow','fluid'],['Geometry Lab','geo'],['Fractal Explorer','fractal'],['PhotoFlow','portrait'],'Workspace','Discover',['Help and Shortcuts','help']];
+const P={},DEF={};for(const k in M){P[k]={};M[k].p.forEach(s=>P[k][s.k]=s.v);DEF[k]=JSON.stringify(P[k])}
+let hist=[],hi=-1;
+const snap=()=>JSON.stringify(P);
+function push(){hist=hist.slice(0,hi+1);hist.push(snap());hi=hist.length-1;if(hist.length>80){hist.shift();hi--}}
+function restore(i){hi=i;const o=JSON.parse(hist[i]);for(const k in o)Object.assign(P[k],o[k]);build();init()}
+const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1600)};
+
+/* ---- navigation ---- */
+function nav(){const n=$('#nav');n.innerHTML='';
+ NAV.forEach((x,i)=>{
+  if(typeof x==='string'){const h=document.createElement('h4');h.textContent=x==='Workspace'?'Saved projects load automatically':'More modes are not built yet';n.appendChild(h);return}
+  const b=document.createElement('button');b.textContent=x[0];b.dataset.k=x[1];b.dataset.i=i;
+  b.onclick=()=>go(x[1]);n.appendChild(b)});
+ ['My Projects','Explore Gallery','Community','3D Particle Universe','Sound Reactive Studio','Motion Typography','Motion Studio'].forEach(s=>{const b=document.createElement('button');b.textContent=s+' (coming)';b.className='off';b.disabled=true;n.appendChild(b)});
+ mark()}
+function mark(){document.querySelectorAll('#nav button[data-k]').forEach(b=>b.classList.toggle('on',b.dataset.k===mode&&b.dataset.i===(mark.i??'1')))}
+function go(k,i){mode=k;$('#help').style.display=k==='help'?'block':'none';
+ if(k==='help'){$('#panel').innerHTML='<h3>Help</h3><p>Shortcuts and tips are shown on the canvas area.</p>';mark();return}
+ build();init();$('#hint').textContent=M[k].hint;mark()}
+
+/* ---- panel ---- */
+function build(){const m=M[mode];if(!m)return;const a=$('#panel');
+ a.innerHTML=`<h3>${m.n}</h3><p>${m.hint}</p><div class="pre" id="pre"></div><div id="ctl"></div>`;
+ if(mode==='portrait'){const f=document.createElement('input');f.type='file';f.accept='image/*';f.id='file';f.style.cssText='margin-bottom:10px;width:100%;color:var(--tx2)';f.onchange=loadImg;a.insertBefore(f,$('#pre'))}
+ for(const nme in m.pre){const b=document.createElement('button');b.textContent=nme;b.onclick=()=>{Object.assign(P[mode],m.pre[nme]);build();init();push()};$('#pre').appendChild(b)}
+ m.p.forEach(s=>{const r=document.createElement('div');r.className='row';const v=P[mode][s.k];
+  r.innerHTML=`<label>${s.l}<span>${v}</span></label><input type="range" min="${s.min}" max="${s.max}" step="${s.step}" value="${v}">`;
+  const inp=r.querySelector('input'),sp=r.querySelector('span');
+  inp.oninput=()=>{P[mode][s.k]=+inp.value;sp.textContent=inp.value;if(mode==='fractal')fr.dirty=true;if(s.k==='count')init(true)};
+  inp.onchange=push;$('#ctl').appendChild(r)})}
+
+/* ---- sizing ---- */
+function size(){const r=cv.parentElement.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,2);W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);init(true);fr.dirty=true}
+new ResizeObserver(size).observe($('#stage'));
+
+/* ---- shared helpers ---- */
+const hsl=(h,s,l,a=1)=>`hsla(${(h+hueG)%360},${s}%,${l}%,${a})`;
+const PAL=[265,190,330];
+const clear=a=>{ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=bgc;ctx.globalAlpha=a;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1};
+const nz=(x,y,z)=>Math.sin(x*1.7+Math.sin(y*1.3+z))+Math.sin(y*1.9+Math.cos(x*1.1-z*.7))+.5*Math.sin((x+y)*3.1+z*1.3);
+
+/* ---- particles ---- */
+let ps=[],boom=[];
+function initParticles(keep){const n=P.particles.count;if(!keep)ps=[];while(ps.length>n)ps.pop();while(ps.length<n)ps.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,c:Math.random()*3|0,o:Math.random()*20-10})}
+function drawParticles(){const q=P.particles;clear(1-q.trail);
+ for(const p of ps){
+  const dx=mx-p.x,dy=my-p.y,d=Math.hypot(dx,dy)+.01;
+  if(d<320){const f=(q.attract-q.repel)*60/(d+40);p.vx+=dx/d*f*.02;p.vy+=dy/d*f*.02;p.vx+=-dy/d*q.orbit*.04*(1-d/320);p.vy+=dx/d*q.orbit*.04*(1-d/320)}
+  for(const b of boom){const bx=p.x-b.x,by=p.y-b.y,bd=Math.hypot(bx,by)+1;if(bd<b.r+60&&bd>b.r-60){p.vx+=bx/bd*b.f;p.vy+=by/bd*b.f}}
+  p.vy+=q.gravity*.05;p.vx*=.985;p.vy*=.985;
+  p.x+=p.vx*q.speed;p.y+=p.vy*q.speed;
+  if(p.x<0||p.x>W){p.vx*=-.9;p.x=Math.max(0,Math.min(W,p.x))}
+  if(p.y<0||p.y>H){p.vy*=-.9;p.y=Math.max(0,Math.min(H,p.y))}}
+ boom=boom.filter(b=>(b.r+=14,b.f*=.93,b.f>.05));
+ if(q.link>0){ctx.lineWidth=.6;const L=q.link;for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){const a=ps[i],b=ps[j],dx=a.x-b.x;if(dx>L||dx<-L)continue;const dy=a.y-b.y,d=dx*dx+dy*dy;if(d<L*L){ctx.strokeStyle=hsl(PAL[a.c],80,65,(1-Math.sqrt(d)/L)*.45);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}}}
+ for(const p of ps){const sp=Math.hypot(p.vx,p.vy);ctx.fillStyle=hsl(PAL[p.c]+p.o+sp*6,85,62);ctx.beginPath();ctx.arc(p.x,p.y,q.radius,0,TAU);ctx.fill()}}
+
+/* ---- fluid ---- */
+let fp=[];
+function initFluid(keep){const n=P.fluid.count;if(!keep)fp=[];while(fp.length>n)fp.pop();while(fp.length<n)fp.push({x:Math.random()*W,y:Math.random()*H,a:Math.random()*60})}
+function drawFluid(){const q=P.fluid;clear(1-q.trail);ctx.lineWidth=q.width;ctx.lineCap='round';
+ const z=t*.0004*q.speed*3,sc=q.scale/300;
+ for(const p of fp){
+  let ang=nz(p.x*sc,p.y*sc,z)*q.turb*.9+nz(p.x*sc*3,p.y*sc*3,z*2)*q.turb*.15;
+  let vx=Math.cos(ang),vy=Math.sin(ang);
+  if(mx>-900){const dx=p.x-mx,dy=p.y-my,d=Math.hypot(dx,dy)+1;if(d<200){const f=(1-d/200)*q.vortex*(down?2.5:1);vx+=-dy/d*f*1.5;vy+=dx/d*f*1.5}}
+  const ox=p.x,oy=p.y;p.x+=vx*1.6*q.speed;p.y+=vy*1.6*q.speed;p.a+=.4;
+  const h=PAL[1]+(Math.atan2(vy,vx)+Math.PI)/TAU*q.hue2*2+(p.a%60)*.3;
+  ctx.strokeStyle=hsl(h,85,60,.55);ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(p.x,p.y);ctx.stroke();
+  if(p.x<0||p.x>W||p.y<0||p.y>H||Math.random()<.002){p.x=Math.random()*W;p.y=Math.random()*H}}}
+
+/* ---- geometry ---- */
+function drawGeo(){const q=P.geo;clear(.35);const cx=W/2,cy=H/2,R=Math.min(W,H)*.45*q.scale;
+ const wx=mx>-900?(mx-cx)/W:0,wy=mx>-900?(my-cy)/H:0,tt=t*.001*q.rot;
+ ctx.lineWidth=q.lw;ctx.save();ctx.translate(cx,cy);
+ for(let s=0;s<q.sym;s++){ctx.save();ctx.rotate(s/q.sym*TAU+tt);if(s%2&&q.sym%2===0)ctx.scale(1,-1);
+  for(let i=0;i<q.shapes;i++){const f=(i+1)/q.shapes,r=R*f*q.space*1.6+R*.02,n=Math.round(q.cx)+(i%3);
+   const off=tt*(i%2?-1:1)*1.5+i*.4,wr=r*(1+Math.sin(tt*3+i)*.06*q.cx/6);
+   ctx.strokeStyle=hsl(PAL[i%3]+f*60,85,62,.75);ctx.beginPath();
+   for(let k=0;k<=n;k++){const a=k/n*TAU+off;let x=Math.cos(a)*wr*.5+r*.5,y=Math.sin(a)*wr*.5;
+    x+=wx*q.warp*80*Math.sin(a*2+i);y+=wy*q.warp*80*Math.cos(a*2+i);k?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+   ctx.stroke()}
+  ctx.restore()}
+ ctx.restore()}
+
+/* ---- fractal ---- */
+const fr={cx:-.5,cy:0,zoom:1,dirty:true,off:document.createElement('canvas')};
+function drawFractal(){if(!fr.dirty)return;fr.dirty=false;const q=P.fractal,st=q.res;
+ const w=Math.max(1,Math.floor(W*dpr/st)),h=Math.max(1,Math.floor(H*dpr/st));fr.off.width=w;fr.off.height=h;
+ const o=fr.off.getContext('2d'),im=o.createImageData(w,h),d=im.data,sc=3/(Math.min(W,H)*dpr/st)/fr.zoom,mi=q.iter;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const px=fr.cx+(x-w/2)*sc,py=fr.cy+(y-h/2)*sc;let zr=q.julia?px:0,zi=q.julia?py:0,cr=q.julia?q.cre:px,ci=q.julia?q.cim:py,i=0,a=0,b=0;
+  while(i<mi){a=zr*zr;b=zi*zi;if(a+b>256)break;zi=2*zr*zi+ci;zr=a-b+cr;i++}
+  const k=(y*w+x)*4;
+  if(i>=mi){d[k]=8;d[k+1]=9;d[k+2]=13}else{const s=i+1-Math.log2(Math.log2(a+b+1)),hh=(q.hue+hueG+s*7)%360,c=hs(hh,.8,.25+.35*Math.min(1,s/40));d[k]=c[0];d[k+1]=c[1];d[k+2]=c[2]}
+  d[k+3]=255}
+ o.putImageData(im,0,0);ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=true;ctx.drawImage(fr.off,0,0,cv.width,cv.height);ctx.setTransform(dpr,0,0,dpr,0,0)}
+function hs(h,s,l){const a=s*Math.min(l,1-l),f=n=>{const k=(n+h/30)%12;return Math.round(255*(l-a*Math.max(-1,Math.min(k-3,9-k,1))))};return[f(0),f(8),f(4)]}
+function frZoom(x,y,z){const sc=3/(Math.min(W,H))/fr.zoom,wx=fr.cx+(x-W/2)*sc,wy=fr.cy+(y-H/2)*sc;fr.zoom=Math.max(.2,Math.min(1e12,fr.zoom*z));const s2=3/Math.min(W,H)/fr.zoom;fr.cx=wx-(x-W/2)*s2;fr.cy=wy-(y-H/2)*s2;fr.dirty=true}
+
+/* ---- PhotoFlow ---- */
+let pp=[],img=null;
+function loadImg(e){const f=e.target.files[0];if(!f)return;const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{img=i;URL.revokeObjectURL(u);initPortrait();toast('Photo loaded')};i.onerror=()=>toast('Could not read that image');i.src=u}
+function initPortrait(){pp=[];if(!img)return;const q=P.portrait,s=Math.min(W/img.width,H/img.height)*.92,iw=Math.floor(img.width*s),ih=Math.floor(img.height*s);
+ const c=document.createElement('canvas');c.width=iw;c.height=ih;const g=c.getContext('2d');g.drawImage(img,0,0,iw,ih);const d=g.getImageData(0,0,iw,ih).data,ox=(W-iw)/2,oy=(H-ih)/2;
+ let tries=0;while(pp.length<q.count&&tries++<q.count*8){const x=Math.random()*iw|0,y=Math.random()*ih|0,k=(y*iw+x)*4,br=(d[k]+d[k+1]+d[k+2])/765;
+  if(Math.random()<.25+br*.75)pp.push({tx:ox+x,ty:oy+y,x:Math.random()*W,y:Math.random()*H,vx:0,vy:0,r:d[k],g:d[k+1],b:d[k+2]})}}
+function drawPortrait(){const q=P.portrait;clear(.28);
+ if(!img){ctx.fillStyle='#94A3B8';ctx.font='15px Inter,sans-serif';ctx.textAlign='center';ctx.fillText('Upload a photo in the right panel to rebuild it from particles',W/2,H/2);return}
+ for(const p of pp){let dx=p.tx-p.x,dy=p.ty-p.y;p.vx+=dx*q.spring;p.vy+=dy*q.spring;
+  const mxd=p.x-mx,myd=p.y-my,d=Math.hypot(mxd,myd)+1;if(d<110){const f=(1-d/110)*q.scatter*4;p.vx+=mxd/d*f;p.vy+=myd/d*f}
+  p.vx*=.82;p.vy*=.82;p.x+=p.vx;p.y+=p.vy;
+  const t2=q.tint;ctx.fillStyle=`rgb(${p.r*(1-t2)+139*t2*(p.r/255)|0},${p.g*(1-t2)+211*t2*(p.g/255)|0},${p.b*(1-t2)+238*t2*(p.b/255)|0})`;
+  ctx.fillRect(p.x,p.y,q.size,q.size)}}
+
+function init(keep){({particles:initParticles,fluid:initFluid,portrait:()=>{if(!keep)initPortrait();else initPortrait()}})[mode]?.(keep);if(!keep||mode==='geo')clear(1);if(mode==='fractal')fr.dirty=true}
+
+/* ---- loop ---- */
+let last=performance.now(),fc=0,ft=0;
+function loop(now){requestAnimationFrame(loop);const dt=now-last;last=now;fc++;ft+=dt;if(ft>600){$('#fps').textContent=Math.round(fc*1000/ft)+' fps';fc=0;ft=0}
+ if(paused||mode==='help')return;t+=dt;
+ ({particles:drawParticles,fluid:drawFluid,geo:drawGeo,fractal:drawFractal,portrait:drawPortrait})[mode]?.()}
+
+/* ---- input ---- */
+const pos=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+let lx=0,ly=0;
+cv.addEventListener('pointermove',e=>{[mx,my]=pos(e);if(mode==='fractal'&&down){fr.cx-=(mx-lx)*3/Math.min(W,H)/fr.zoom;fr.cy-=(my-ly)*3/Math.min(W,H)/fr.zoom;fr.dirty=true}lx=mx;ly=my});
+cv.addEventListener('pointerdown',e=>{down=true;cv.setPointerCapture(e.pointerId);[mx,my]=pos(e);lx=mx;ly=my;if(mode==='particles')boom.push({x:mx,y:my,r:0,f:3})});
+cv.addEventListener('pointerup',()=>down=false);
+cv.addEventListener('pointerleave',()=>{if(!down){mx=my=-999}});
+cv.addEventListener('wheel',e=>{if(mode!=='fractal')return;e.preventDefault();const[x,y]=pos(e);frZoom(x,y,e.deltaY<0?1.25:.8)},{passive:false});
+cv.addEventListener('dblclick',()=>{if(mode==='fractal'){fr.cx=P.fractal.julia?0:-.5;fr.cy=0;fr.zoom=1;fr.dirty=true}});
+
+/* ---- toolbar ---- */
+$('#bg').oninput=e=>{bgc=e.target.value;fr.dirty=true;clear(1)};
+$('#hue').oninput=e=>{hueG=+e.target.value;fr.dirty=true};
+$('#bPause').onclick=()=>{paused=!paused;$('#bPause').textContent=paused?'Play':'Pause'};
+$('#bUndo').onclick=()=>hi>0&&restore(hi-1);
+$('#bRedo').onclick=()=>hi<hist.length-1&&restore(hi+1);
+$('#bReset').onclick=()=>{P[mode]=JSON.parse(DEF[mode]);build();init();push()};
+function rand(){const m=M[mode];m.p.forEach(s=>{const n=Math.round((s.min+Math.random()*(s.max-s.min))/s.step)*s.step;P[mode][s.k]=+n.toFixed(3)});build();init();push()}
+$('#bRand').onclick=rand;
+$('#bFull').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.().catch(()=>toast('Fullscreen is blocked here'))};
+function save(){try{localStorage.setItem('pixelflow',JSON.stringify({P,title:$('#title').value,mode}));toast('Saved')}catch(e){toast('Saving is unavailable in this browser')}}
+$('#bSave').onclick=save;
+async function exp(){const dl=await window.claude?.use('downloads');
+ cv.toBlob(async b=>{if(!dl){toast('Export is not available in this view');return}
+  try{await dl.save({filename:($('#title').value||'pixelflow').replace(/[^\w-]+/g,'_')+'.png',data:b});toast('Exported')}catch(e){if(e.code!=='declined')toast('Export failed')}})}
+$('#bExp').onclick=exp;
+addEventListener('keydown',e=>{if(/INPUT|SELECT/.test(e.target.tagName)&&e.target.type!=='range')return;
+ const k=e.key.toLowerCase();
+ if((e.ctrlKey||e.metaKey)&&k==='z'){e.preventDefault();e.shiftKey?$('#bRedo').click():$('#bUndo').click()}
+ else if(!e.ctrlKey&&!e.metaKey){if(k==='r')rand();else if(k==='f')$('#bFull').click();else if(k==='s')save();else if(k==='e')exp();else if(k===' '){e.preventDefault();$('#bPause').click()}}});
+
+/* ---- start ---- */
+try{const s=JSON.parse(localStorage.getItem('pixelflow')||'null');if(s){for(const k in s.P)Object.assign(P[k],s.P[k]);$('#title').value=s.title||'Untitled project';if(M[s.mode])mode=s.mode}}catch(e){}
+nav();build();$('#hint').textContent=M[mode].hint;size();push();mark();requestAnimationFrame(loop);
+})();
+</script></body></html>
